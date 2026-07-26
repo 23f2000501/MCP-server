@@ -2,7 +2,7 @@ import os
 from hashlib import sha256
 
 from fastmcp import FastMCP
-from starlette.requests import Request
+from fastmcp.server.dependencies import get_http_headers
 
 EMAIL = "23f2000501@ds.study.iitm.ac.in".strip().lower()
 
@@ -10,11 +10,12 @@ mcp = FastMCP("Exam MCP")
 
 
 @mcp.tool
-async def solve_challenge(request: Request) -> str:
-    challenge = request.headers.get("X-Exam-Challenge", "")
+async def solve_challenge() -> str:
+    headers = get_http_headers()
+    challenge = headers.get("x-exam-challenge", "")
 
     return sha256(
-        f"{challenge}:{EMAIL}".encode()
+        f"{challenge}:{EMAIL}".encode("utf-8")
     ).hexdigest()[:16]
 
 
