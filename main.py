@@ -1,38 +1,26 @@
 import os
 from hashlib import sha256
 
-from mcp.server.fastmcp import FastMCP, Context
+from fastmcp import FastMCP
+from starlette.requests import Request
 
 EMAIL = "23f2000501@ds.study.iitm.ac.in".strip().lower()
 
-mcp = FastMCP(
-    "Exam MCP",
-    stateless_http=True,
-    json_response=True,
-)
+mcp = FastMCP("Exam MCP")
 
 
-@mcp.tool(name="solve_challenge")
-async def solve_challenge(ctx: Context) -> str:
-    headers = ctx.headers or {}
+@mcp.tool
+async def solve_challenge(request: Request) -> str:
+    challenge = request.headers.get("X-Exam-Challenge", "")
 
-    challenge = (
-        headers.get("x-exam-challenge")
-        or headers.get("X-Exam-Challenge")
-        or ""
-    )
-
-    digest = sha256(
-        f"{challenge}:{EMAIL}".encode("utf-8")
+    return sha256(
+        f"{challenge}:{EMAIL}".encode()
     ).hexdigest()[:16]
-
-    return digest
 
 
 if __name__ == "__main__":
     mcp.run(
-        transport="http",
+        transport="streamable-http",
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 8000)),
-        path="/mcp",
     )
