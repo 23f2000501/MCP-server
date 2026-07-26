@@ -1,4 +1,6 @@
+import os
 from hashlib import sha256
+
 from mcp.server.fastmcp import FastMCP, Context
 
 EMAIL = "23f2000501@ds.study.iitm.ac.in".strip().lower()
@@ -21,11 +23,15 @@ async def solve_challenge(ctx: Context) -> str:
     )
 
     digest = sha256(
-        f"{challenge}:{EMAIL}".encode()
+        f"{challenge}:{EMAIL}".encode("utf-8")
     ).hexdigest()[:16]
 
     return digest
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    mcp.run(
+        transport="http",
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", "8000")),
+    )
